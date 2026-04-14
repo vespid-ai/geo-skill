@@ -23,6 +23,7 @@ Search keywords this repository is deliberately optimized around:
 2. a zero-dependency Python CLI for auditing and generating core GEO assets
 3. a searchable README and repository structure that describe GEO, skill, CLI, and agent workflows clearly
 4. a first real batch of operational GEO skills for product sites, docs, pricing, trust, changelog, comparisons, and OSS repos
+5. a second batch of live-audit and generator capabilities for multilingual sites, API docs, case studies, and migration-safe GEO work
 
 ## Agent compatibility
 
@@ -65,6 +66,13 @@ Codex-ready skills are stored in `.agents/skills/<skill-name>/SKILL.md` and foll
 - `geo-oss-repo-geo`
 - `geo-launch-distribution`
 
+### Second-batch expansion skills
+
+- `geo-multilingual-localization`
+- `geo-api-docs-geo`
+- `geo-case-studies-social-proof`
+- `geo-site-migration-url-stability`
+
 ## CLI commands
 
 ```bash
@@ -73,8 +81,11 @@ geo-skill skills show openai-chatgpt-search --agent hermes
 geo-skill install --agent codex --all
 geo-skill install --agent claude --skill geo-site-readiness
 geo-skill audit ./site
+geo-skill audit --url https://example.com
 geo-skill generate robots --domain https://example.com
 geo-skill generate llms --project GeoSkill --summary "Open-source GEO skill pack" --url https://example.com
+geo-skill generate schema software-application --name "Geo Skill" --url https://example.com --summary "Operational GEO toolkit"
+geo-skill generate page-outline homepage --project "Geo Skill" --audience "AI product teams" --summary "Operational GEO toolkit"
 ```
 
 ## Why this exists
@@ -137,6 +148,9 @@ This first real batch is designed to cover the actual GEO work most teams need f
 - creating grounded comparison pages
 - improving OSS repo discoverability on GitHub and the open web
 - improving launch and distribution signals outside the official website
+- generating starter structured data and page outlines
+- auditing live URLs before and after publication or migration
+- covering multilingual, API-doc, case-study, and migration GEO workflows
 
 ## Technical audit example
 

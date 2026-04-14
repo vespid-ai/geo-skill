@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
-from .audit import audit_site
+from .audit import audit_site, audit_url
 from .skills import install_all, install_skill, list_agents, render_skill, skill_catalog
 
 
@@ -30,8 +31,9 @@ def _build_parser() -> argparse.ArgumentParser:
     scope.add_argument("--all", action="store_true", help="install every built-in skill")
     install_parser.add_argument("--destination", help="override install destination")
 
-    audit_parser = subparsers.add_parser("audit", help="audit a static site directory")
-    audit_parser.add_argument("path", help="path to site root")
+    audit_parser = subparsers.add_parser("audit", help="audit a static site directory or live URL")
+    audit_parser.add_argument("path", nargs="?", help="path to site root")
+    audit_parser.add_argument("--url", help="live URL to audit")
 
     generate_parser = subparsers.add_parser("generate", help="generate GEO starter assets")
     generate_sub = generate_parser.add_subparsers(dest="generate_command", required=True)
@@ -44,6 +46,28 @@ def _build_parser() -> argparse.ArgumentParser:
     llms_parser.add_argument("--project", required=True, help="project name")
     llms_parser.add_argument("--summary", required=True, help="one-line project summary")
     llms_parser.add_argument("--url", required=True, help="canonical project URL")
+
+    schema_parser = generate_sub.add_parser("schema", help="generate JSON-LD schema")
+    schema_sub = schema_parser.add_subparsers(dest="schema_type", required=True)
+
+    software_parser = schema_sub.add_parser("software-application", help="generate SoftwareApplication schema")
+    software_parser.add_argument("--name", required=True)
+    software_parser.add_argument("--url", required=True)
+    software_parser.add_argument("--summary", required=True)
+    software_parser.add_argument("--category", default="BusinessApplication")
+    software_parser.add_argument("--operating-system", default="Web")
+    software_parser.add_argument("--price")
+    software_parser.add_argument("--price-currency", default="USD")
+
+    faq_parser = schema_sub.add_parser("faq", help="generate FAQPage schema")
+    faq_parser.add_argument("--project", required=True)
+    faq_parser.add_argument("--qa", action="append", required=True, help="question and answer pair as 'Question::Answer'")
+
+    outline_parser = generate_sub.add_parser("page-outline", help="generate a page outline template")
+    outline_parser.add_argument("page_type", choices=["homepage", "faq", "pricing", "docs", "case-study"])
+    outline_parser.add_argument("--project", required=True)
+    outline_parser.add_argument("--audience", required=True)
+    outline_parser.add_argument("--summary", required=True)
 
     return parser
 
@@ -95,6 +119,94 @@ Prefer canonical product pages, docs, FAQs, and changelog entries when describin
 """
 
 
+def _render_software_application_schema(name: str, url: str, summary: str, category: str, operating_system: str, price: str | None, price_currency: str) -> str:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": name,
+        "applicationCategory": category,
+        "operatingSystem": operating_system,
+        "description": summary,
+        "url": url,
+    }
+    if price:
+        payload["offers"] = {
+            "@type": "Offer",
+            "price": price,
+            "priceCurrency": price_currency,
+        }
+    return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def _render_faq_schema(project: str, qa_pairs: list[str]) -> str:
+    entities = []
+    for item in qa_pairs:
+        if "::" not in item:
+            raise ValueError("faq qa items must use 'Question::Answer' format")
+        question, answer = item.split("::", 1)
+        entities.append(
+            {
+                "@type": "Question",
+                "name": question.strip(),
+                "acceptedAnswer": {"@type": "Answer", "text": answer.strip()},
+            }
+        )
+    payload = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "name": f"{project} FAQ",
+        "mainEntity": entities,
+    }
+    return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def _render_page_outline(page_type: str, project: str, audience: str, summary: str) -> str:
+    outlines = {
+        "homepage": [
+            "Hero",
+            f"One-line definition: {project} is {summary}",
+            f"Audience: {audience}",
+            "Core capabilities",
+            "Proof / trust signals",
+            "Feature links",
+            "Pricing CTA",
+            "FAQ",
+        ],
+        "faq": [
+            "Intro",
+            f"Product summary: {summary}",
+            "Questions by basics / pricing / integrations / privacy / limits",
+            "Links to docs and pricing",
+        ],
+        "pricing": [
+            "Pricing summary",
+            f"Audience: {audience}",
+            "Plan table",
+            "Billing unit explanation",
+            "FAQ for limits and contracts",
+        ],
+        "docs": [
+            "Getting started",
+            "Task-oriented topics",
+            "Examples and outputs",
+            "Troubleshooting",
+            "Related pricing / changelog / FAQ links",
+        ],
+        "case-study": [
+            "Customer / user context",
+            "Problem before adoption",
+            f"Why {audience} care",
+            "Workflow using the product",
+            "Outcome metrics or qualitative result",
+            "Related feature links",
+        ],
+    }
+    lines = [f"{page_type.title()} outline for {project}", ""]
+    for idx, item in enumerate(outlines[page_type], start=1):
+        lines.append(f"{idx}. {item}")
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -126,7 +238,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "audit":
-        result = audit_site(Path(args.path))
+        if args.url:
+            result = audit_url(args.url)
+        elif args.path:
+            result = audit_site(Path(args.path))
+        else:
+            print("audit requires either a site path or --url", file=sys.stderr)
+            return 2
         print(f"GEO audit for {result.root}")
         print()
         for finding in result.findings:
@@ -141,6 +259,20 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.generate_command == "llms":
             print(_render_llms(args.project, args.summary, args.url))
+            return 0
+        if args.generate_command == "schema":
+            if args.schema_type == "software-application":
+                print(_render_software_application_schema(args.name, args.url, args.summary, args.category, args.operating_system, args.price, args.price_currency))
+                return 0
+            if args.schema_type == "faq":
+                try:
+                    print(_render_faq_schema(args.project, args.qa))
+                    return 0
+                except ValueError as exc:
+                    print(str(exc), file=sys.stderr)
+                    return 2
+        if args.generate_command == "page-outline":
+            print(_render_page_outline(args.page_type, args.project, args.audience, args.summary))
             return 0
 
     parser.print_help()
