@@ -22,6 +22,7 @@ Search keywords this repository is deliberately optimized around:
 1. agent-loadable skills for Hermes Agent, Claude Code, and Codex
 2. a zero-dependency Python CLI for auditing and generating core GEO assets
 3. a searchable README and repository structure that describe GEO, skill, CLI, and agent workflows clearly
+4. a first real batch of operational GEO skills for product sites, docs, pricing, trust, changelog, comparisons, and OSS repos
 
 ## Agent compatibility
 
@@ -39,10 +40,30 @@ Codex-ready skills are stored in `.agents/skills/<skill-name>/SKILL.md` and foll
 
 ## Built-in GEO skills
 
+### Search-surface skills
+
 - `openai-chatgpt-search`
 - `doubao-bytespider`
+- `geo-bing-webmaster-foundation`
 - `geo-site-readiness`
+- `geo-structured-data-software-sites`
+
+### Content and page-modeling skills
+
 - `geo-content-modeling`
+- `geo-homepage-positioning`
+- `geo-feature-pages`
+- `geo-pricing-pages`
+- `geo-faq-coverage`
+- `geo-docs-help-center`
+- `geo-changelog-freshness`
+- `geo-comparison-pages`
+- `geo-trust-and-entity-pages`
+
+### Distribution and repo skills
+
+- `geo-oss-repo-geo`
+- `geo-launch-distribution`
 
 ## CLI commands
 
@@ -64,8 +85,14 @@ Most GEO advice is still too fuzzy to operationalize. Teams hear that they shoul
 - sitemap and indexing hygiene
 - product fact modeling
 - FAQ and docs coverage
+- pricing and packaging clarity
+- trust and entity signals
+- changelog freshness
+- comparison pages
 - structured data
 - machine-readable page design
+- OSS repo discoverability
+- distribution signals outside the main site
 - agent-operable skills that can repeat the work
 
 `geo-skill` focuses on operational GEO instead of folklore.
@@ -99,6 +126,18 @@ Install one Claude skill into a custom directory:
 geo-skill install --agent claude --skill geo-content-modeling --destination ./tmp-claude-skills
 ```
 
+## What the first useful batch covers
+
+This first real batch is designed to cover the actual GEO work most teams need first:
+
+- making OpenAI / ChatGPT Search and 豆包 / Bytespider discovery easier
+- improving Bing-facing indexing and submission hygiene
+- fixing homepage positioning and feature-page structure
+- making pricing, FAQ, docs, changelog, and trust pages easier to cite
+- creating grounded comparison pages
+- improving OSS repo discoverability on GitHub and the open web
+- improving launch and distribution signals outside the official website
+
 ## Technical audit example
 
 ```text
@@ -123,6 +162,7 @@ Summary: 4 pass, 2 warn, 0 fail
 skills/hermes/           Hermes-ready skills
 src/geo_skill/           CLI implementation
 tests/                   unit tests
+docs/plans/              implementation plans
 ```
 
 ## Design principles
@@ -132,13 +172,14 @@ tests/                   unit tests
 - CLI stays easy to call from agents
 - OpenAI GEO and ByteDance GEO are modeled as distinct surfaces
 - README uses industry-standard terms so humans and search systems can find it with combinations like GEO + skill + CLI + agent
+- useful page archetypes are treated as first-class GEO work, not as generic SEO leftovers
 
 ## Roadmap
 
 ### P0
 
 - richer audit checks for canonical, OG/Twitter, schema quality, and page coverage
-- more skills for pricing pages, changelog strategy, and docs IA
+- more skills for multilingual GEO, case studies, API docs, and site migration
 - JSON output mode for CI gates
 
 ### P1

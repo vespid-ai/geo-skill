@@ -23,4 +23,4 @@ Use when the task is about helping a site be easier to discover through ByteDanc
 ## CLI hooks
 - `geo-skill audit <site-root>` for local readiness checks.
 - `geo-skill generate robots --domain https://example.com` for a starter policy that includes Bytespider.
-- Do not invent a fake 'DoubaoBot' dependency when public crawler guidance points to Bytespider / 头条搜索 surfaces.
+- Do not invent a fake DoubaoBot dependency when public crawler guidance points to Bytespider / 头条搜索 surfaces.
