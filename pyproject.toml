@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geo-skill"
+version = "0.1.0"
+description = "Open-source GEO skill pack and CLI for AI-search discoverability"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "vespid-ai"}
+]
+keywords = ["geo", "seo", "ai-search", "chatgpt-search", "bytespider", "doubao"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Internet :: WWW/HTTP",
+  "Topic :: Software Development :: Quality Assurance"
+]
+
+[project.scripts]
+geo-skill = "geo_skill.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/vespid-ai/geo-skill"
+Issues = "https://github.com/vespid-ai/geo-skill/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
