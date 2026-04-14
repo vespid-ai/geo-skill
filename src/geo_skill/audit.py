@@ -31,6 +31,33 @@ class AuditResult:
     def fail_count(self) -> int:
         return sum(1 for item in self.findings if item.level == "FAIL")
 
+    @property
+    def total_count(self) -> int:
+        return len(self.findings)
+
+    @property
+    def score(self) -> int:
+        if not self.findings:
+            return 0
+        raw = (self.pass_count + 0.5 * self.warn_count) / self.total_count
+        return round(raw * 100)
+
+    def to_dict(self) -> dict:
+        return {
+            "root": self.root,
+            "score": self.score,
+            "summary": {
+                "pass": self.pass_count,
+                "warn": self.warn_count,
+                "fail": self.fail_count,
+                "total": self.total_count,
+            },
+            "findings": [
+                {"level": item.level, "message": item.message}
+                for item in self.findings
+            ],
+        }
+
 
 @dataclass(frozen=True)
 class FetchResult:

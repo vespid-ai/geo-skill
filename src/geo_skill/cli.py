@@ -34,6 +34,7 @@ def _build_parser() -> argparse.ArgumentParser:
     audit_parser = subparsers.add_parser("audit", help="audit a static site directory or live URL")
     audit_parser.add_argument("path", nargs="?", help="path to site root")
     audit_parser.add_argument("--url", help="live URL to audit")
+    audit_parser.add_argument("--format", choices=["text", "json"], default="text", help="output format")
 
     generate_parser = subparsers.add_parser("generate", help="generate GEO starter assets")
     generate_sub = generate_parser.add_subparsers(dest="generate_command", required=True)
@@ -68,6 +69,14 @@ def _build_parser() -> argparse.ArgumentParser:
     outline_parser.add_argument("--project", required=True)
     outline_parser.add_argument("--audience", required=True)
     outline_parser.add_argument("--summary", required=True)
+
+    template_parser = generate_sub.add_parser("page-template", help="generate a starter markdown page template")
+    template_parser.add_argument("page_type", choices=["feature", "pricing", "faq", "comparison", "changelog"])
+    template_parser.add_argument("--project", required=True)
+    template_parser.add_argument("--summary", required=True)
+    template_parser.add_argument("--audience", required=True)
+    template_parser.add_argument("--feature", help="feature or page subject")
+    template_parser.add_argument("--competitor", help="comparison target")
 
     return parser
 
@@ -207,6 +216,19 @@ def _render_page_outline(page_type: str, project: str, audience: str, summary: s
     return "\n".join(lines)
 
 
+def _render_page_template(page_type: str, project: str, audience: str, summary: str, feature: str | None, competitor: str | None) -> str:
+    feature_name = feature or f"{project} capability"
+    competitor_name = competitor or "Alternative"
+    templates = {
+        "feature": f"""# {feature_name}\n\n> {summary}\n\n## What it is\n\n{feature_name} is a feature in {project} for {audience}.\n\n## Who it is for\n\n- {audience}\n- Teams evaluating this workflow\n\n## What problem it solves\n\n- Problem statement\n- Why the default workflow breaks\n\n## How it works\n\n1. Input\n2. Processing\n3. Output\n\n## Key capabilities\n\n- Capability 1\n- Capability 2\n- Capability 3\n\n## Limits and requirements\n\n- Requirement 1\n- Limit 1\n\n## Related pages\n\n- Pricing\n- Docs\n- FAQ\n""",
+        "pricing": f"""# {project} pricing\n\n> Pricing overview for {audience}.\n\n## Summary\n\n{summary}\n\n## Plans\n\n| Plan | Best for | Price | Notes |\n| --- | --- | --- | --- |\n| Starter | ... | ... | ... |\n| Pro | ... | ... | ... |\n| Enterprise | ... | ... | ... |\n\n## Billing model\n\n- Seat / usage / subscription details\n\n## FAQ\n\n### Is there a free tier?\nAnswer here.\n\n### How is usage billed?\nAnswer here.\n""",
+        "faq": f"""# {project} FAQ\n\n> Common questions from {audience}.\n\n## What is {project}?\n{summary}\n\n## Who is it for?\nAnswer here.\n\n## How does pricing work?\nAnswer here.\n\n## What integrations or APIs are supported?\nAnswer here.\n\n## How does deployment or setup work?\nAnswer here.\n\n## What are the limits?\nAnswer here.\n""",
+        "comparison": f"""# {project} vs {competitor_name}\n\n> Comparison page for buyers and evaluators.\n\n## Summary\n\n{project} is for {audience}. {competitor_name} may be better for a different workload.\n\n## Comparison table\n\n| Dimension | {project} | {competitor_name} |\n| --- | --- | --- |\n| Best for | ... | ... |\n| Pricing model | ... | ... |\n| Deployment | ... | ... |\n| Key strengths | ... | ... |\n\n## Where {project} is stronger\n\n- Point 1\n\n## Where {competitor_name} may be stronger\n\n- Point 1\n\n## Related pages\n\n- Feature pages\n- Pricing\n- FAQ\n""",
+        "changelog": f"""# {project} changelog entry\n\n## Release title\n\n- Date: YYYY-MM-DD\n- Area: {feature_name}\n\n## What changed\n\n- Change 1\n- Change 2\n\n## Why it matters\n\n- User impact\n- Workflow impact\n\n## Related docs\n\n- Docs page\n- Feature page\n- Pricing page if relevant\n""",
+    }
+    return templates[page_type]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -245,12 +267,16 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("audit requires either a site path or --url", file=sys.stderr)
             return 2
-        print(f"GEO audit for {result.root}")
-        print()
-        for finding in result.findings:
-            print(f"{finding.level:<5} {finding.message}")
-        print()
-        print(f"Summary: {result.pass_count} pass, {result.warn_count} warn, {result.fail_count} fail")
+        if args.format == "json":
+            print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+        else:
+            print(f"GEO audit for {result.root}")
+            print()
+            for finding in result.findings:
+                print(f"{finding.level:<5} {finding.message}")
+            print()
+            print(f"Score: {result.score}")
+            print(f"Summary: {result.pass_count} pass, {result.warn_count} warn, {result.fail_count} fail")
         return 1 if result.fail_count else 0
 
     if args.command == "generate":
@@ -273,6 +299,9 @@ def main(argv: list[str] | None = None) -> int:
                     return 2
         if args.generate_command == "page-outline":
             print(_render_page_outline(args.page_type, args.project, args.audience, args.summary))
+            return 0
+        if args.generate_command == "page-template":
+            print(_render_page_template(args.page_type, args.project, args.audience, args.summary, args.feature, args.competitor))
             return 0
 
     parser.print_help()

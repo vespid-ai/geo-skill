@@ -24,6 +24,7 @@ Search keywords this repository is deliberately optimized around:
 3. a searchable README and repository structure that describe GEO, skill, CLI, and agent workflows clearly
 4. a first real batch of operational GEO skills for product sites, docs, pricing, trust, changelog, comparisons, and OSS repos
 5. a second batch of live-audit and generator capabilities for multilingual sites, API docs, case studies, and migration-safe GEO work
+6. a third batch with score-based audit output, JSON reporting, richer live checks, starter page templates, and the first tagged release workflow
 
 ## Agent compatibility
 
@@ -82,10 +83,12 @@ geo-skill install --agent codex --all
 geo-skill install --agent claude --skill geo-site-readiness
 geo-skill audit ./site
 geo-skill audit --url https://example.com
+geo-skill audit ./site --format json
 geo-skill generate robots --domain https://example.com
 geo-skill generate llms --project GeoSkill --summary "Open-source GEO skill pack" --url https://example.com
 geo-skill generate schema software-application --name "Geo Skill" --url https://example.com --summary "Operational GEO toolkit"
 geo-skill generate page-outline homepage --project "Geo Skill" --audience "AI product teams" --summary "Operational GEO toolkit"
+geo-skill generate page-template feature --project "Geo Skill" --feature "Live URL Audit" --audience "AI product teams" --summary "Audit public pages for GEO readiness"
 ```
 
 ## Why this exists
@@ -151,6 +154,16 @@ This first real batch is designed to cover the actual GEO work most teams need f
 - generating starter structured data and page outlines
 - auditing live URLs before and after publication or migration
 - covering multilingual, API-doc, case-study, and migration GEO workflows
+
+## Third-batch audit and generator upgrades
+
+The third batch adds operational output modes and starter generation, not just advice:
+
+- score-based audit output in text mode
+- `--format json` for CI or scripted consumption
+- richer live checks for canonical, `html lang`, and discovery files
+- starter markdown page templates for feature, pricing, FAQ, comparison, and changelog pages
+- first public release preparation
 
 ## Technical audit example
 
