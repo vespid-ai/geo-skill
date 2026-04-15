@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.5.0 - 2026-04-15
+
+Fifth batch of `geo-skill` shipped in one pass.
+
+### Added
+- bundled benchmark fixtures for weak marketing, docs-strong, and OSS release-oriented GEO surfaces
+- `geo-skill benchmarks list` for discovering repo-local fixtures
+- `geo-skill audit --format markdown` for shareable review docs
+- `geo-skill audit --format sarif` for CI or code-scanning pipelines
+- `geo-skill compare before.json after.json` with text, JSON, and markdown output
+
+### Improved
+- compare reports now show score delta, coverage gained/lost, and resolved versus introduced findings
+- README examples and roadmap now reflect the fifth batch and benchmark-driven workflows
+- unittest entrypoint remains runnable directly with the src-layout test bootstrap
+
+### Validation
+- strict TDD for benchmark/report/compare additions
+- unittest suite passes locally
+- CLI smoke tests pass for benchmark listing, markdown/SARIF export, and compare mode
+
 ## v0.4.0 - 2026-04-15
 
 Fourth batch of `geo-skill` shipped in one pass.

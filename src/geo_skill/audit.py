@@ -156,7 +156,7 @@ def _check_file(findings: List[Finding], path: Path, label: str) -> None:
 
 
 def _fetch_text(url: str, timeout: int = 10) -> FetchResult:
-    request = Request(url, headers={"User-Agent": "geo-skill/0.4"})
+    request = Request(url, headers={"User-Agent": "geo-skill/0.5"})
     with urlopen(request, timeout=timeout) as response:
         content_type = response.headers.get("Content-Type", "")
         payload = response.read().decode("utf-8", errors="ignore")

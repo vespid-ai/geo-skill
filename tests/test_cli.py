@@ -11,6 +11,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from geo_skill.benchmarks import list_benchmarks
 from geo_skill.cli import main
 from geo_skill.skills import list_skills
 
@@ -258,6 +259,156 @@ class CliTests(unittest.TestCase):
             self.assertIn("Coverage:", output)
             self.assertIn("pricing: yes", output)
             self.assertIn("faq: no", output)
+
+    def test_benchmarks_list(self):
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
+            code = main(["benchmarks", "list"])
+        self.assertEqual(code, 0)
+        output = stdout.getvalue()
+        self.assertIn("weak-marketing-site", output)
+        self.assertIn("docs-strong-site", output)
+        self.assertIn("oss-release-site", output)
+        self.assertTrue(all(item.path.exists() for item in list_benchmarks()))
+        self.assertTrue((ROOT / "src/geo_skill/data/benchmarks/docs-strong-site/index.html").exists())
+
+    def test_audit_markdown_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "robots.txt").write_text("User-agent: *\nAllow: /\n", encoding="utf-8")
+            (root / "sitemap.xml").write_text("<urlset></urlset>", encoding="utf-8")
+            (root / "index.html").write_text("<html lang='en'><head><title>Example</title><meta name='description' content='x'></head><body><h1>FAQ</h1></body></html>", encoding="utf-8")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                code = main(["audit", str(root), "--format", "markdown"])
+            self.assertEqual(code, 0)
+            output = stdout.getvalue()
+            self.assertIn("# GEO Audit", output)
+            self.assertIn("## Summary", output)
+            self.assertIn("## Coverage", output)
+
+    def test_audit_sarif_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "index.html").write_text("<html><head><title>Example</title></head><body></body></html>", encoding="utf-8")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                code = main(["audit", str(root), "--format", "sarif"])
+            self.assertEqual(code, 0)
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(payload["version"], "2.1.0")
+            self.assertEqual(payload["runs"][0]["tool"]["driver"]["name"], "geo-skill")
+            self.assertTrue(payload["runs"][0]["results"])
+
+    def test_compare_json_output(self):
+        before = {
+            "root": "before",
+            "score": 55,
+            "summary": {"pass": 4, "warn": 3, "fail": 2, "total": 9},
+            "coverage": {
+                "homepage": {"present": True, "matches": ["/"]},
+                "feature": {"present": False, "matches": []},
+                "pricing": {"present": False, "matches": []},
+                "docs": {"present": False, "matches": []},
+                "faq": {"present": False, "matches": []},
+                "changelog": {"present": False, "matches": []},
+                "trust": {"present": False, "matches": []},
+            },
+            "findings": [
+                {"level": "FAIL", "message": "robots.txt missing"},
+                {"level": "WARN", "message": "coverage: pricing pages not found"},
+            ],
+        }
+        after = {
+            "root": "after",
+            "score": 82,
+            "summary": {"pass": 8, "warn": 1, "fail": 0, "total": 9},
+            "coverage": {
+                "homepage": {"present": True, "matches": ["/"]},
+                "feature": {"present": True, "matches": ["/features/live-audit/"]},
+                "pricing": {"present": True, "matches": ["/pricing/"]},
+                "docs": {"present": True, "matches": ["/docs/"]},
+                "faq": {"present": True, "matches": ["/faq/"]},
+                "changelog": {"present": True, "matches": ["/changelog/"]},
+                "trust": {"present": True, "matches": ["/about/"]},
+            },
+            "findings": [
+                {"level": "PASS", "message": "robots.txt exists"},
+                {"level": "PASS", "message": "coverage: pricing pages found (/pricing/)"},
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            before_path = Path(tmp) / "before.json"
+            after_path = Path(tmp) / "after.json"
+            before_path.write_text(json.dumps(before), encoding="utf-8")
+            after_path.write_text(json.dumps(after), encoding="utf-8")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                code = main(["compare", str(before_path), str(after_path), "--format", "json"])
+            self.assertEqual(code, 0)
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(payload["score_delta"], 27)
+            self.assertIn("pricing", payload["coverage_gained"])
+            self.assertIn("robots.txt missing", payload["resolved_findings"])
+            self.assertEqual(payload["introduced_findings"], [])
+
+    def test_compare_invalid_report_shape_returns_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            before_path = Path(tmp) / "before.json"
+            after_path = Path(tmp) / "after.json"
+            before_path.write_text(json.dumps({"summary": [], "coverage": []}), encoding="utf-8")
+            after_path.write_text(json.dumps({"summary": [], "coverage": []}), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                code = main(["compare", str(before_path), str(after_path), "--format", "json"])
+            self.assertEqual(code, 2)
+            self.assertIn("invalid audit report", stderr.getvalue().lower())
+
+    def test_compare_invalid_nested_coverage_returns_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            before_path = Path(tmp) / "before.json"
+            after_path = Path(tmp) / "after.json"
+            before_path.write_text(json.dumps({"summary": {}, "coverage": {"homepage": []}, "findings": []}), encoding="utf-8")
+            after_path.write_text(json.dumps({"summary": {}, "coverage": {"homepage": []}, "findings": []}), encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                code = main(["compare", str(before_path), str(after_path), "--format", "json"])
+            self.assertEqual(code, 2)
+            self.assertIn("invalid audit report", stderr.getvalue().lower())
+
+    def test_compare_does_not_mark_removed_passes_as_resolved_findings(self):
+        before = {
+            "root": "before",
+            "score": 60,
+            "summary": {"pass": 1, "warn": 0, "fail": 0, "total": 1},
+            "coverage": {name: {"present": False, "matches": []} for name in ["homepage", "feature", "pricing", "docs", "faq", "changelog", "trust"]},
+            "findings": [{"level": "PASS", "message": "robots.txt exists"}],
+        }
+        after = {
+            "root": "after",
+            "score": 50,
+            "summary": {"pass": 0, "warn": 0, "fail": 0, "total": 0},
+            "coverage": {name: {"present": False, "matches": []} for name in ["homepage", "feature", "pricing", "docs", "faq", "changelog", "trust"]},
+            "findings": [],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            before_path = Path(tmp) / "before.json"
+            after_path = Path(tmp) / "after.json"
+            before_path.write_text(json.dumps(before), encoding="utf-8")
+            after_path.write_text(json.dumps(after), encoding="utf-8")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                code = main(["compare", str(before_path), str(after_path), "--format", "json"])
+            self.assertEqual(code, 0)
+            payload = json.loads(stdout.getvalue())
+            self.assertEqual(payload["resolved_findings"], [])
+
+    def test_audit_rejects_path_and_url_together(self):
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            code = main(["audit", "./site", "--url", "https://example.com"])
+        self.assertEqual(code, 2)
+        self.assertIn("cannot use both", stderr.getvalue().lower())
 
     def test_install_codex_skill_to_tempdir(self):
         with tempfile.TemporaryDirectory() as tmp:

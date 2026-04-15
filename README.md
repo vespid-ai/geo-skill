@@ -43,6 +43,7 @@ Generative Engine Optimization (GEO) skill pack and Python CLI for AI search, Ch
 5. a second batch of live-audit and generator capabilities for multilingual sites, API docs, case studies, and migration-safe GEO work
 6. a third batch with score-based audit output, JSON reporting, richer live checks, starter page templates, and the first tagged release workflow
 7. a fourth batch with sitemap-aware page archetype coverage, trust/discovery surface detection, and broader schema generation for Product, Organization, WebSite, and BreadcrumbList
+8. a fifth batch with bundled benchmark fixtures, markdown / SARIF audit exports, and before/after compare reports for GEO migrations and content upgrades
 
 ## Agent compatibility
 
@@ -99,9 +100,14 @@ geo-skill skills list
 geo-skill skills show openai-chatgpt-search --agent hermes
 geo-skill install --agent codex --all
 geo-skill install --agent claude --skill geo-site-readiness
+geo-skill benchmarks list
 geo-skill audit ./site
 geo-skill audit --url https://example.com
 geo-skill audit ./site --format json
+geo-skill audit ./site --format markdown
+geo-skill audit ./site --format sarif
+geo-skill compare before.json after.json
+geo-skill compare before.json after.json --format markdown
 geo-skill generate robots --domain https://example.com
 geo-skill generate llms --project GeoSkill --summary "Open-source GEO skill pack" --url https://example.com
 geo-skill generate schema software-application --name "Geo Skill" --url https://example.com --summary "Operational GEO toolkit"
@@ -196,6 +202,23 @@ The fourth batch moves from isolated page checks toward site-shape validation an
 - trust/discovery checks backed by page archetype matching instead of only single-page metadata
 - new schema generators for `Product`, `Organization`, `WebSite`, and `BreadcrumbList`
 
+## Fifth-batch benchmarks and reporting upgrades
+
+The fifth batch turns geo-skill into a more useful regression and CI tool, not just an audit snapshot tool:
+
+- bundled benchmark fixtures you can inspect and audit directly from the repository
+- `audit --format markdown` for shareable review docs
+- `audit --format sarif` for code-scanning and CI annotation pipelines
+- `compare before.json after.json` for before/after GEO migrations and content upgrades
+
+## Bundled benchmark fixtures
+
+Use `geo-skill benchmarks list` to discover the built-in fixtures:
+
+- `weak-marketing-site` — thin marketing surface with weak crawl and support coverage
+- `docs-strong-site` — stronger product/docs/pricing/changelog benchmark with solid GEO hygiene
+- `oss-release-site` — OSS-oriented benchmark for release, docs, and repository-linked discovery flows
+
 ## Technical audit example
 
 ```text
@@ -225,6 +248,7 @@ Coverage:
 ```text
 .agents/skills/          Codex-ready skills
 .claude/skills/          Claude-ready skills
+benchmarks/              Bundled GEO benchmark fixtures
 skills/hermes/           Hermes-ready skills
 src/geo_skill/           CLI implementation
 tests/                   unit tests
@@ -244,15 +268,15 @@ docs/plans/              implementation plans
 
 ### P0
 
-- benchmark fixtures from real product sites
 - richer page-type heuristics for multilingual and multi-product sites
-- optional markdown / SARIF export for CI comments and issue filing
+- benchmark fixture expansion for more regional and docs-heavy archetypes
+- compare thresholds or quality gates for CI enforcement
 
 ### P1
 
 - repo-scoped installer helpers for Codex and Claude skill locations
-- benchmark diff mode for before/after GEO audits
 - optional plugin packaging for Codex distribution
+- benchmark packs for localized and API-first sites
 
 ### P2
 

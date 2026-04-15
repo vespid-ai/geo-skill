@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "geo-skill"
-version = "0.4.0"
+version = "0.5.0"
 description = "Open-source GEO skill pack and CLI for AI-search discoverability"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -38,3 +38,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+geo_skill = ["data/benchmarks/**/*.html", "data/benchmarks/**/*.txt", "data/benchmarks/**/*.xml"]

@@ -1,0 +1,8 @@
+# Geo Skill Docs Strong
+
+> Operational GEO benchmark fixture with strong docs and support surfaces.
+
+- Homepage: https://example.com/
+- Docs: https://example.com/docs/
+- Pricing: https://example.com/pricing/
+- Changelog: https://example.com/changelog/
