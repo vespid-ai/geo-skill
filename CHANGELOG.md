@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.4.0 - 2026-04-15
+
+Fourth batch of `geo-skill` shipped in one pass.
+
+### Added
+- sitemap-aware page archetype coverage for homepage, feature, pricing, docs, FAQ, changelog, and trust surfaces
+- coverage summaries in both text and JSON audit output
+- JSON-LD generators for `Product`, `Organization`, `WebSite`, and `BreadcrumbList`
+
+### Improved
+- live URL audits now reuse `sitemap.xml` to infer site-shape coverage instead of checking only the requested page
+- local audits now detect broader discovery and trust surfaces from the generated site tree
+- README examples and roadmap now reflect the fourth batch and the expanded schema surface
+
+### Validation
+- targeted TDD cycle completed for coverage detection and new schema generators
+- unittest suite passes locally
+
 ## v0.3.0 - 2026-04-15
 
 First public tagged release of `geo-skill`.

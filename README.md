@@ -25,6 +25,7 @@ Search keywords this repository is deliberately optimized around:
 4. a first real batch of operational GEO skills for product sites, docs, pricing, trust, changelog, comparisons, and OSS repos
 5. a second batch of live-audit and generator capabilities for multilingual sites, API docs, case studies, and migration-safe GEO work
 6. a third batch with score-based audit output, JSON reporting, richer live checks, starter page templates, and the first tagged release workflow
+7. a fourth batch with sitemap-aware page archetype coverage, trust/discovery surface detection, and broader schema generation for Product, Organization, WebSite, and BreadcrumbList
 
 ## Agent compatibility
 
@@ -87,6 +88,10 @@ geo-skill audit ./site --format json
 geo-skill generate robots --domain https://example.com
 geo-skill generate llms --project GeoSkill --summary "Open-source GEO skill pack" --url https://example.com
 geo-skill generate schema software-application --name "Geo Skill" --url https://example.com --summary "Operational GEO toolkit"
+geo-skill generate schema product --name "Geo Skill Cloud" --url https://example.com/product --summary "Managed GEO workflow platform" --brand "vespid-ai" --price 99
+geo-skill generate schema organization --name "vespid-ai" --url https://vespid.ai --description "Agent infrastructure and GEO tooling" --same-as https://github.com/vespid-ai
+geo-skill generate schema website --name "Geo Skill" --url https://example.com --description "Operational GEO toolkit" --search-url-template "https://example.com/search?q={search_term_string}"
+geo-skill generate schema breadcrumb --item "Home::https://example.com" --item "Docs::https://example.com/docs"
 geo-skill generate page-outline homepage --project "Geo Skill" --audience "AI product teams" --summary "Operational GEO toolkit"
 geo-skill generate page-template feature --project "Geo Skill" --feature "Live URL Audit" --audience "AI product teams" --summary "Audit public pages for GEO readiness"
 ```
@@ -165,6 +170,15 @@ The third batch adds operational output modes and starter generation, not just a
 - starter markdown page templates for feature, pricing, FAQ, comparison, and changelog pages
 - first public release preparation
 
+## Fourth-batch coverage and schema upgrades
+
+The fourth batch moves from isolated page checks toward site-shape validation and broader machine-readable entities:
+
+- sitemap-aware detection for homepage, feature, pricing, docs, FAQ, changelog, and trust surfaces
+- coverage summaries in both text and JSON audit output
+- trust/discovery checks backed by page archetype matching instead of only single-page metadata
+- new schema generators for `Product`, `Organization`, `WebSite`, and `BreadcrumbList`
+
 ## Technical audit example
 
 ```text
@@ -179,6 +193,14 @@ PASS  index.html has meta description
 WARN  no JSON-LD structured data found in sampled HTML files
 
 Summary: 4 pass, 2 warn, 0 fail
+Coverage:
+- homepage: yes (/)
+- feature: no
+- pricing: no
+- docs: no
+- faq: yes (/)
+- changelog: no
+- trust: no
 ```
 
 ## Repository layout
@@ -205,21 +227,21 @@ docs/plans/              implementation plans
 
 ### P0
 
-- richer audit checks for canonical, OG/Twitter, schema quality, and page coverage
-- more skills for multilingual GEO, case studies, API docs, and site migration
-- JSON output mode for CI gates
+- benchmark fixtures from real product sites
+- richer page-type heuristics for multilingual and multi-product sites
+- optional markdown / SARIF export for CI comments and issue filing
 
 ### P1
 
-- live URL audit mode
-- installer helpers for repo-scoped Codex and Claude skill locations
-- schema generators for `SoftwareApplication`, `Product`, and FAQ pages
+- repo-scoped installer helpers for Codex and Claude skill locations
+- benchmark diff mode for before/after GEO audits
+- optional plugin packaging for Codex distribution
 
 ### P2
 
-- benchmark fixtures from real product sites
 - more agent-specific skill variants and packaging helpers
-- optional plugin packaging for Codex distribution
+- sitemap index crawling for very large sites
+- opt-in remote concurrency for large live audits
 
 ## License
 

@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from .audit import audit_site, audit_url
+from .audit import COVERAGE_ORDER, audit_site, audit_url
 from .skills import install_all, install_skill, list_agents, render_skill, skill_catalog
 
 
@@ -59,6 +59,30 @@ def _build_parser() -> argparse.ArgumentParser:
     software_parser.add_argument("--operating-system", default="Web")
     software_parser.add_argument("--price")
     software_parser.add_argument("--price-currency", default="USD")
+
+    product_parser = schema_sub.add_parser("product", help="generate Product schema")
+    product_parser.add_argument("--name", required=True)
+    product_parser.add_argument("--url", required=True)
+    product_parser.add_argument("--summary", required=True)
+    product_parser.add_argument("--category", default="Software")
+    product_parser.add_argument("--brand")
+    product_parser.add_argument("--price")
+    product_parser.add_argument("--price-currency", default="USD")
+
+    organization_parser = schema_sub.add_parser("organization", help="generate Organization schema")
+    organization_parser.add_argument("--name", required=True)
+    organization_parser.add_argument("--url", required=True)
+    organization_parser.add_argument("--description", required=True)
+    organization_parser.add_argument("--same-as", action="append", default=[], help="repeatable sameAs URL")
+
+    website_parser = schema_sub.add_parser("website", help="generate WebSite schema")
+    website_parser.add_argument("--name", required=True)
+    website_parser.add_argument("--url", required=True)
+    website_parser.add_argument("--description", required=True)
+    website_parser.add_argument("--search-url-template", help="optional search URL template like https://example.com/search?q={search_term_string}")
+
+    breadcrumb_parser = schema_sub.add_parser("breadcrumb", help="generate BreadcrumbList schema")
+    breadcrumb_parser.add_argument("--item", action="append", required=True, help="breadcrumb item as 'Name::URL'")
 
     faq_parser = schema_sub.add_parser("faq", help="generate FAQPage schema")
     faq_parser.add_argument("--project", required=True)
@@ -147,6 +171,79 @@ def _render_software_application_schema(name: str, url: str, summary: str, categ
     return json.dumps(payload, indent=2, ensure_ascii=False)
 
 
+def _render_product_schema(name: str, url: str, summary: str, category: str, brand: str | None, price: str | None, price_currency: str) -> str:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "name": name,
+        "category": category,
+        "description": summary,
+        "url": url,
+    }
+    if brand:
+        payload["brand"] = {"@type": "Brand", "name": brand}
+    if price:
+        payload["offers"] = {
+            "@type": "Offer",
+            "price": price,
+            "priceCurrency": price_currency,
+            "url": url,
+        }
+    return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def _render_organization_schema(name: str, url: str, description: str, same_as: list[str]) -> str:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": name,
+        "url": url,
+        "description": description,
+    }
+    if same_as:
+        payload["sameAs"] = same_as
+    return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def _render_website_schema(name: str, url: str, description: str, search_url_template: str | None) -> str:
+    payload = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": name,
+        "url": url,
+        "description": description,
+    }
+    if search_url_template:
+        payload["potentialAction"] = {
+            "@type": "SearchAction",
+            "target": search_url_template,
+            "query-input": "required name=search_term_string",
+        }
+    return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def _render_breadcrumb_schema(items: list[str]) -> str:
+    elements = []
+    for position, item in enumerate(items, start=1):
+        if "::" not in item:
+            raise ValueError("breadcrumb items must use 'Name::URL' format")
+        name, url = item.split("::", 1)
+        elements.append(
+            {
+                "@type": "ListItem",
+                "position": position,
+                "name": name.strip(),
+                "item": url.strip(),
+            }
+        )
+    payload = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": elements,
+    }
+    return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
 def _render_faq_schema(project: str, qa_pairs: list[str]) -> str:
     entities = []
     for item in qa_pairs:
@@ -229,6 +326,16 @@ def _render_page_template(page_type: str, project: str, audience: str, summary: 
     return templates[page_type]
 
 
+def _render_coverage(result) -> str:
+    lines = ["Coverage:"]
+    for bucket in COVERAGE_ORDER:
+        matches = result.coverage.get(bucket, ())
+        yes_no = "yes" if matches else "no"
+        detail = f" ({', '.join(matches[:2])})" if matches else ""
+        lines.append(f"- {bucket}: {yes_no}{detail}")
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -277,6 +384,7 @@ def main(argv: list[str] | None = None) -> int:
             print()
             print(f"Score: {result.score}")
             print(f"Summary: {result.pass_count} pass, {result.warn_count} warn, {result.fail_count} fail")
+            print(_render_coverage(result))
         return 1 if result.fail_count else 0
 
     if args.command == "generate":
@@ -287,16 +395,28 @@ def main(argv: list[str] | None = None) -> int:
             print(_render_llms(args.project, args.summary, args.url))
             return 0
         if args.generate_command == "schema":
-            if args.schema_type == "software-application":
-                print(_render_software_application_schema(args.name, args.url, args.summary, args.category, args.operating_system, args.price, args.price_currency))
-                return 0
-            if args.schema_type == "faq":
-                try:
+            try:
+                if args.schema_type == "software-application":
+                    print(_render_software_application_schema(args.name, args.url, args.summary, args.category, args.operating_system, args.price, args.price_currency))
+                    return 0
+                if args.schema_type == "product":
+                    print(_render_product_schema(args.name, args.url, args.summary, args.category, args.brand, args.price, args.price_currency))
+                    return 0
+                if args.schema_type == "organization":
+                    print(_render_organization_schema(args.name, args.url, args.description, args.same_as))
+                    return 0
+                if args.schema_type == "website":
+                    print(_render_website_schema(args.name, args.url, args.description, args.search_url_template))
+                    return 0
+                if args.schema_type == "breadcrumb":
+                    print(_render_breadcrumb_schema(args.item))
+                    return 0
+                if args.schema_type == "faq":
                     print(_render_faq_schema(args.project, args.qa))
                     return 0
-                except ValueError as exc:
-                    print(str(exc), file=sys.stderr)
-                    return 2
+            except ValueError as exc:
+                print(str(exc), file=sys.stderr)
+                return 2
         if args.generate_command == "page-outline":
             print(_render_page_outline(args.page_type, args.project, args.audience, args.summary))
             return 0
