@@ -1,20 +1,31 @@
 # geo-skill
 
-Generative Engine Optimization (GEO) skill pack, CLI, and agent-ready repository for OpenAI / ChatGPT Search, 豆包 / Bytespider, and machine-readable product discovery.
+Generative Engine Optimization (GEO) skill pack and Python CLI for AI search, ChatGPT Search, Bing, llms.txt, structured data, and machine-readable content discovery.
 
-`geo-skill` is an open-source GitHub project for teams that want reusable GEO skills and a practical CLI that can be used by agents such as Hermes Agent, Claude Code, and Codex.
+`geo-skill` is an open-source repository for teams that want reusable GEO skills plus a practical CLI for auditing and generating the pages, files, and metadata that improve discovery across OpenAI / ChatGPT Search, Bing, 豆包 / Bytespider, docs sites, multilingual sites, and OSS repos.
 
-Search keywords this repository is deliberately optimized around:
+[Built-in GEO skills](#built-in-geo-skills) · [CLI commands](#cli-commands) · [Quick start](#quick-start)
+
+## Multilingual snapshot
+
+### 简体中文
+`geo-skill` 提供面向 AI Search / ChatGPT Search / 豆包 / Bytespider 的 GEO 技能包与 Python CLI，用于审计站点可发现性、生成 llms.txt / schema / 页面骨架，并提升机器可读内容质量。
+
+### 日本語
+`geo-skill` は AI Search / ChatGPT Search / 豆包 / Bytespider 向けの GEO skill pack と Python CLI を提供し、llms.txt、schema、ページ構造、ドキュメント導線を実務レベルで改善できるようにします。
+
+### Español
+`geo-skill` ofrece un skill pack GEO y un CLI en Python para AI search, ChatGPT Search y otros motores de descubrimiento, con auditoría de sitios, generación de llms.txt, schema y mejoras de contenido legible por máquinas.
+
+## Search surface
 
 - Generative Engine Optimization
 - GEO
-- GEO skill
-- GEO CLI
-- GEO agent
-- ChatGPT Search GEO
-- OpenAI GEO
-- 豆包 GEO
-- Bytespider GEO
+- AI search optimization
+- ChatGPT Search
+- llms.txt
+- structured data
+- machine-readable content
 - agent skill pack
 
 ## What this repo provides
