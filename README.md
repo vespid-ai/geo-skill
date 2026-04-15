@@ -6,7 +6,7 @@
 [![Release](https://img.shields.io/badge/release-v0.5.0-16a34a)](https://github.com/vespid-ai/geo-skill/releases/tag/v0.5.0)
 [![License](https://img.shields.io/badge/license-MIT-16a34a)](./LICENSE)
 
-English | [简体中文](./README.zh-CN.md) | [日本語](./README.ja.md)
+English | [简体中文](./README.zh-CN.md) | [日本語](./README.ja.md) | [Español](./README.es.md)
 
 `geo-skill` is an open-source GEO toolkit for teams that want their product, docs, pricing, FAQ, and changelog to be easier to discover and cite across AI search surfaces such as ChatGPT Search, Bing-connected answer engines, and ByteDance / Bytespider workflows.
 
@@ -17,7 +17,7 @@ It gives you two things:
 
 This repository is for external users who want to improve real-world AI-search discoverability — not just read internal notes about GEO.
 
-[Quick start](#quick-start) · [What you can do](#what-you-can-do-with-geo-skill) · [CLI commands](#cli-commands) · [Built-in benchmarks](#built-in-benchmark-fixtures)
+[Quick start](#quick-start) · [30-second use cases](#30-second-use-cases) · [What you can do](#what-you-can-do-with-geo-skill) · [CLI commands](#cli-commands) · [Built-in benchmarks](#built-in-benchmark-fixtures)
 
 ## Who this is for
 
@@ -62,6 +62,17 @@ source .venv/bin/activate
 pip install -e .
 geo-skill skills list
 ```
+
+## 30-second use cases
+
+- You launched a new docs site and want to see whether pricing, docs, FAQ, and trust pages are actually visible to AI search workflows.
+- You migrated URLs and need a before/after GEO compare report for the team.
+- You want a quick way to generate `llms.txt`, `robots.txt`, and schema starters before polishing content by hand.
+- You want your agent to run repeatable GEO checks instead of manually reviewing every page.
+
+## Workflow at a glance
+
+![geo-skill workflow](./docs/assets/geo-skill-workflow.png)
 
 ## Example workflows
 

@@ -1,6 +1,6 @@
 # geo-skill
 
-[English](./README.md) | [简体中文](./README.zh-CN.md) | 日本語
+[English](./README.md) | [简体中文](./README.zh-CN.md) | 日本語 | [Español](./README.es.md)
 
 `geo-skill` は、製品ページ、ドキュメント、料金ページ、FAQ、更新履歴を AI 検索や回答エンジンで見つけやすくし、引用されやすくしたいチーム向けのオープンソース GEO ツールキットです。
 

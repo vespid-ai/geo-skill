@@ -1,6 +1,6 @@
 # geo-skill
 
-[English](./README.md) | 简体中文 | [日本語](./README.ja.md)
+[English](./README.md) | 简体中文 | [日本語](./README.ja.md) | [Español](./README.es.md)
 
 `geo-skill` 是一个开源 GEO 工具包，面向希望提升产品、文档、定价页、FAQ、更新日志在 AI 搜索与答案引擎中可发现性和可引用性的团队。
 
