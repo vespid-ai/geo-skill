@@ -1,5 +1,11 @@
 # geo-skill
 
+[![Status](https://img.shields.io/badge/status-released%20CLI-16a34a)](https://github.com/vespid-ai/geo-skill)
+[![Docs](https://img.shields.io/badge/docs-vespid.ai-111827)](https://vespid.ai/projects/geo-skill/)
+[![Website](https://img.shields.io/badge/website-vespid.ai-0f766e)](https://vespid.ai)
+[![Release](https://img.shields.io/badge/release-v0.4.0-16a34a)](https://github.com/vespid-ai/geo-skill/releases/tag/v0.4.0)
+[![License](https://img.shields.io/badge/license-MIT-16a34a)](./LICENSE)
+
 Generative Engine Optimization (GEO) skill pack and Python CLI for AI search, ChatGPT Search, Bing, llms.txt, structured data, and machine-readable content discovery.
 
 `geo-skill` is an open-source repository for teams that want reusable GEO skills plus a practical CLI for auditing and generating the pages, files, and metadata that improve discovery across OpenAI / ChatGPT Search, Bing, 豆包 / Bytespider, docs sites, multilingual sites, and OSS repos.
